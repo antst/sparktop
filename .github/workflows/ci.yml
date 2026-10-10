@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build (arm64)
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build release
+        run: swift build -c release
+
+      - name: Assemble SparkTop.app (smoke)
+        run: ./build.sh
+
+      - name: Verify bundle
+        run: |
+          test -x dist/SparkTop.app/Contents/MacOS/SparkTop
+          test -f dist/SparkTop.app/Contents/Info.plist
+          codesign --verify dist/SparkTop.app
+          echo "bundle OK"

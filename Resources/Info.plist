@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleName</key>
+	<string>SparkTop</string>
+	<key>CFBundleDisplayName</key>
+	<string>SparkTop</string>
+	<key>CFBundleIdentifier</key>
+	<string>com.sparktop.menubar</string>
+	<key>CFBundleExecutable</key>
+	<string>SparkTop</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleVersion</key>
+	<string>1.0.0</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.0.0</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>13.0</string>
+	<!-- Menu bar agent: no Dock icon, no main window -->
+	<key>LSUIElement</key>
+	<true/>
+	<!-- sparkDash servers are user-configured and commonly plain HTTP on the
+	     LAN or over Tailscale, so allow non-HTTPS connections. -->
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
+	<key>NSHumanReadableCopyright</key>
+	<string>Personal monitoring client for sparkDash</string>
+</dict>
+</plist>
