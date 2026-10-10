@@ -54,12 +54,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             }
         }
     }
-    /// Popover pinned in front vs auto-hide on losing focus. Derived from the
-    /// setting (also re-derived at every popover show, so a missed launch-time
-    /// apply can never desync the two).
+    /// The popover's own NSPopover auto-close is disabled; closing is owned
+    /// by StatusItemController's outside-interaction monitor (auto-hide) or
+    /// stays open until dismissed (pinned).
     private func applyPopoverBehavior() {
-        popover.behavior = settings.popoverBehavior
-        FileHandle.standardError.write(Data("[sparktop] popover behavior → \(popover.behavior == .applicationDefined ? "pinned" : "transient")\n".utf8))
+        popover.behavior = .applicationDefined
+        Settings.log("popover mode: \(settings.keepPopoverFront ? "pinned" : "auto-hide")")
     }
 }
 

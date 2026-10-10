@@ -149,13 +149,6 @@ final class Settings: ObservableObject {
         }
     }
 
-    /// Popover behavior — THE single source of truth, derived from the
-    /// setting every time it is consulted. `--pin` forces pinned (debug).
-    var popoverBehavior: NSPopover.Behavior {
-        if CommandLine.arguments.contains("--pin") { return .applicationDefined }
-        return keepPopoverFront ? .applicationDefined : .transient
-    }
-
     static func log(_ message: String) {
         FileHandle.standardError.write(Data("[sparktop] \(message)\n".utf8))
     }

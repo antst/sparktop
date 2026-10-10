@@ -13,6 +13,10 @@ final class StatusItemController: NSObject, NSMenuDelegate, NSPopoverDelegate {
     /// while in auto-hide mode (NSPopover.transient is unreliable for
     /// accessory apps, so auto-hide is enforced explicitly).
     private var outsideMonitors: [Any] = []
+    /// When the popover was last shown; outside events within the grace
+    /// window are the tail of the opening click and are ignored.
+    private var shownAt: Date?
+    private static let graceInterval: TimeInterval = 0.3
 
     nonisolated static func log(_ message: String) {
         FileHandle.standardError.write(Data("[sparktop] \(message)\n".utf8))
@@ -68,7 +72,10 @@ final class StatusItemController: NSObject, NSMenuDelegate, NSPopoverDelegate {
         settingsCancellable = settings.objectWillChange
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in
-                Task { @MainActor in self?.renderCurrent() }
+                Task { @MainActor in
+                    self?.renderCurrent()
+                    self?.refreshOutsideMonitors()
+                }
             }
         renderCurrent()
     }
@@ -126,10 +133,15 @@ final class StatusItemController: NSObject, NSMenuDelegate, NSPopoverDelegate {
         guard let button = statusItem?.button else { return }
         // Derive behavior from the setting at every open — the setting and
         // the popover can never drift apart, even across upgrades.
-        popover.behavior = settings.popoverBehavior
+        // NSPopover's own transient auto-close is unreliable for accessory
+        // apps (it can close on the opening click's tail or never close at
+        // all), so the behavior is always .applicationDefined and closing is
+        // fully owned by the outside-interaction monitor below.
+        popover.behavior = .applicationDefined
+        shownAt = Date()
         popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
         refreshOutsideMonitors()
-        Self.log("popover shown (\(popover.behavior == .applicationDefined ? "pinned" : "auto-hide"))")
+        Self.log("popover shown (\(settings.keepPopoverFront ? "pinned" : "auto-hide"))")
     }
 
     /// While auto-hiding: any click or keypress OUTSIDE this app closes the
@@ -137,7 +149,9 @@ final class StatusItemController: NSObject, NSMenuDelegate, NSPopoverDelegate {
     /// so the bolt toggle and in-popover controls keep working untouched.
     private func refreshOutsideMonitors() {
         removeOutsideMonitors()
-        guard popover.behavior == .transient else { return }
+        // --pin (debug) forces the pinned behavior regardless of settings.
+        guard settings.keepPopoverFront == false,
+              !CommandLine.arguments.contains("--pin") else { return }
         let mask: NSEvent.EventTypeMask = [.leftMouseUp, .rightMouseUp, .keyDown]
         outsideMonitors.append(NSEvent.addGlobalMonitorForEvents(matching: mask) { [weak self] _ in
             Task { @MainActor in self?.dismissIfShown(reason: "interaction outside the app") }
@@ -152,6 +166,12 @@ final class StatusItemController: NSObject, NSMenuDelegate, NSPopoverDelegate {
     private func dismissIfShown(reason: String) {
         guard popover.isShown else {
             removeOutsideMonitors()
+            return
+        }
+        // The tail of the opening click arrives as a global event right
+        // after show(); ignore anything within the grace window and keep
+        // the monitors armed for the next genuine outside interaction.
+        if let shownAt, Date().timeIntervalSince(shownAt) < Self.graceInterval {
             return
         }
         Self.log("popover closing: \(reason)")
