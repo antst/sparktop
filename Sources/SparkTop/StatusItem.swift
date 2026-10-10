@@ -8,7 +8,16 @@ import Foundation
 /// The item uses a sticky width: it grows to fit the widest metric rendered
 /// so far but never shrinks back, so neighbors don't jitter as digits change.
 @MainActor
-final class StatusItemController: NSObject, NSMenuDelegate {
+final class StatusItemController: NSObject, NSMenuDelegate, NSPopoverDelegate {
+    /// Global event monitors that close the popover on outside interaction
+    /// while in auto-hide mode (NSPopover.transient is unreliable for
+    /// accessory apps, so auto-hide is enforced explicitly).
+    private var outsideMonitors: [Any] = []
+
+    nonisolated static func log(_ message: String) {
+        FileHandle.standardError.write(Data("[sparktop] \(message)\n".utf8))
+    }
+
     private let store: SnapshotStore
     private let settings: Settings
     private let popover: NSPopover
@@ -35,6 +44,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         self.settings = settings
         self.popover = popover
         super.init()
+        popover.delegate = self
     }
 
     func install(openSettings: @escaping () -> Void, openDashboard: @escaping () -> Void) {
@@ -118,6 +128,39 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         // the popover can never drift apart, even across upgrades.
         popover.behavior = settings.popoverBehavior
         popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
+        refreshOutsideMonitors()
+        Self.log("popover shown (\(popover.behavior == .applicationDefined ? "pinned" : "auto-hide"))")
+    }
+
+    /// While auto-hiding: any click or keypress OUTSIDE this app closes the
+    /// popover. Events aimed at our own process never hit global monitors,
+    /// so the bolt toggle and in-popover controls keep working untouched.
+    private func refreshOutsideMonitors() {
+        removeOutsideMonitors()
+        guard popover.behavior == .transient else { return }
+        let mask: NSEvent.EventTypeMask = [.leftMouseUp, .rightMouseUp, .keyDown]
+        outsideMonitors.append(NSEvent.addGlobalMonitorForEvents(matching: mask) { [weak self] _ in
+            Task { @MainActor in self?.dismissIfShown(reason: "interaction outside the app") }
+        })
+    }
+
+    private func removeOutsideMonitors() {
+        for monitor in outsideMonitors { NSEvent.removeMonitor(monitor) }
+        outsideMonitors.removeAll()
+    }
+
+    private func dismissIfShown(reason: String) {
+        guard popover.isShown else {
+            removeOutsideMonitors()
+            return
+        }
+        Self.log("popover closing: \(reason)")
+        popover.performClose(nil)
+        removeOutsideMonitors()
+    }
+
+    func popoverDidClose(_ notification: Notification) {
+        removeOutsideMonitors()
     }
 
     // MARK: Rendering
