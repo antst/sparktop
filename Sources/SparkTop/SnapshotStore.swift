@@ -33,7 +33,6 @@ final class SnapshotStore: ObservableObject {
     private var pingTimer: Timer?
     private var watchdogTimer: Timer?
     private var restTimer: Timer?
-    private var retryItem: DispatchWorkItem?
     private var authTask: Task<Void, Never>?
 
     private nonisolated static func log(_ message: String) {
@@ -52,28 +51,28 @@ final class SnapshotStore: ObservableObject {
     func start() {
         stopTimers()
         backoff = 1
-        watchdogTimer = Timer.scheduledTimer(withTimeInterval: 3, repeats: true) { [weak self] _ in
-            Task { @MainActor in self?.watchdogTick() }
+        // Weak self is bound in the innermost closure: the Timer callback is
+        // @Sendable, and older Swift rejects var-self captured across it.
+        watchdogTimer = Timer.scheduledTimer(withTimeInterval: 3, repeats: true) { _ in
+            Task { @MainActor [weak self] in self?.watchdogTick() }
         }
-        pingTimer = Timer.scheduledTimer(withTimeInterval: 20, repeats: true) { [weak self] _ in
-            Task { @MainActor in self?.sendPing() }
+        pingTimer = Timer.scheduledTimer(withTimeInterval: 20, repeats: true) { _ in
+            Task { @MainActor [weak self] in self?.sendPing() }
         }
-        restTimer = Timer.scheduledTimer(withTimeInterval: 45, repeats: true) { [weak self] _ in
-            Task { @MainActor in self?.pollRest() }
+        restTimer = Timer.scheduledTimer(withTimeInterval: 45, repeats: true) { _ in
+            Task { @MainActor [weak self] in self?.pollRest() }
         }
         pollRest()
         connect()
     }
 
     func reconnect() {
-        retryItem?.cancel()
         teardownSocket()
         backoff = 1
         start()
     }
 
     func stop() {
-        retryItem?.cancel()
         teardownSocket()
         stopTimers()
         state = .idle
@@ -93,7 +92,6 @@ final class SnapshotStore: ObservableObject {
     // MARK: Connection
 
     private func connect() {
-        retryItem?.cancel()
         guard let url = settings.wsURL() else {
             Self.log("no server URL configured (raw: \(settings.serverURL))")
             state = .disconnected("No sparkDash server URL configured")
@@ -148,7 +146,7 @@ final class SnapshotStore: ObservableObject {
         guard let task else { return }
         task.sendPing { [weak self] error in
             guard error != nil else { return }
-            Task { @MainActor in
+            Task { @MainActor [weak self] in
                 self?.scheduleReconnect(reason: "ping failed")
             }
         }
@@ -179,9 +177,11 @@ final class SnapshotStore: ObservableObject {
             }
             let delay = self.backoff
             self.backoff = min(30, self.backoff * 2)
-            let item = DispatchWorkItem { [weak self] in self?.connect() }
-            self.retryItem = item
-            DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: item)
+            // Task inherits the main-actor context here, so sleeping on it
+            // replaces the old DispatchWorkItem without a nested capture.
+            try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
+            if Task.isCancelled { return }
+            self.connect()
         }
     }
 
