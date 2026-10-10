@@ -3,7 +3,10 @@ import Combine
 import Foundation
 
 /// Owns the NSStatusItem: a bolt icon plus a live fleet metric, tinted by
-/// fleet health. Clicking toggles the popover.
+/// fleet health. Clicking toggles the popover; right-click opens a menu.
+///
+/// The item uses a sticky width: it grows to fit the widest metric rendered
+/// so far but never shrinks back, so neighbors don't jitter as digits change.
 @MainActor
 final class StatusItemController: NSObject, NSMenuDelegate {
     private let store: SnapshotStore
@@ -15,6 +18,18 @@ final class StatusItemController: NSObject, NSMenuDelegate {
     private var openSettings: (() -> Void)?
     private var openDashboard: (() -> Void)?
 
+    /// High-water mark of metric text width (points). Never shrinks during a
+    /// session; reset when the metric mode changes.
+    private var maxMetricWidth: CGFloat = 0
+    private var lastMetricMode: MenuBarMetric?
+
+    /// Cap so a pathological value can't eat the whole menu bar.
+    private nonisolated static let maxMetricWidthCap: CGFloat = 110
+    private nonisolated static let barHeight: CGFloat = 24
+    private nonisolated static let boltWidth: CGFloat = 12
+    private nonisolated static let gap: CGFloat = 3
+    private nonisolated static let sidePadding: CGFloat = 5
+
     init(store: SnapshotStore, settings: Settings, popover: NSPopover) {
         self.store = store
         self.settings = settings
@@ -25,11 +40,8 @@ final class StatusItemController: NSObject, NSMenuDelegate {
     func install(openSettings: @escaping () -> Void, openDashboard: @escaping () -> Void) {
         self.openSettings = openSettings
         self.openDashboard = openDashboard
-        let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
+        let item = NSStatusBar.system.statusItem(withLength: Self.statusLength(metricWidth: 0))
         if let button = item.button {
-            button.image = NSImage(systemSymbolName: "bolt.fill", accessibilityDescription: "SparkTop")
-            button.image?.isTemplate = true
-            button.imageHugsTitle = true
             button.action = #selector(togglePopover)
             button.target = self
             button.sendAction(on: [.leftMouseUp, .rightMouseUp])
@@ -49,6 +61,10 @@ final class StatusItemController: NSObject, NSMenuDelegate {
                 Task { @MainActor in self?.renderCurrent() }
             }
         renderCurrent()
+    }
+
+    static func statusLength(metricWidth: CGFloat) -> CGFloat {
+        Self.sidePadding + Self.boltWidth + Self.gap + metricWidth + Self.sidePadding
     }
 
     @objc private func togglePopover() {
@@ -116,11 +132,11 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         case .power:
             var watts = 0.0
             for s in online { watts += s.metrics?.gpu?.power?.draw ?? 0 }
-            return watts > 0 ? " \(Int(watts.rounded()))W" : ""
+            return "\(Int(watts.rounded()))W"
         case .gpu:
             var busiest = 0.0
             for s in online { busiest = max(busiest, s.metrics?.gpu?.usage ?? 0) }
-            return busiest > 0 ? " \(Int(busiest.rounded()))%" : ""
+            return "\(Int(busiest.rounded()))%"
         case .decode:
             var tps = 0.0
             for s in online {
@@ -128,11 +144,11 @@ final class StatusItemController: NSObject, NSMenuDelegate {
                     tps += l.generationTps ?? 0
                 }
             }
-            return tps > 0 ? " \(Fmt.tpsShort(tps)) t/s" : ""
+            return "\(Fmt.tpsShort(tps)) t/s"
         case .memory:
             var usedMB = 0.0
             for s in online { usedMB += s.metrics?.unifiedMemory?.used ?? s.metrics?.ram?.used ?? 0 }
-            return usedMB > 0 ? " \(Int((usedMB / 1024).rounded()))G" : ""
+            return "\(Int((usedMB / 1024).rounded()))G"
         }
     }
 
@@ -141,29 +157,54 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         let summary = SnapshotStore.summarize(sparks)
 
         var title = metricTitle(metric, sparks: sparks)
-        var color = NSColor.labelColor
-        var tint: NSColor? = nil
+        var color: NSColor = .labelColor
+        var isTemplate = true
 
         switch state {
         case .connected, .idle, .connecting:
             if summary.hasCritical {
                 color = .systemRed
+                isTemplate = false
             } else if summary.hasOffline || summary.hasWarning {
                 color = .systemYellow
+                isTemplate = false
             }
         case .disconnected, .authFailed:
             title = ""
-            tint = .systemRed
+            color = .systemRed
+            isTemplate = false
         }
 
-        button.attributedTitle = NSAttributedString(
-            string: title,
-            attributes: [
-                .font: NSFont.monospacedDigitSystemFont(ofSize: NSFont.systemFontSize(for: .small), weight: .medium),
-                .foregroundColor: color,
-            ]
+        // Sticky width: grow to the widest value seen, never shrink back.
+        if metric != lastMetricMode {
+            maxMetricWidth = 0
+            lastMetricMode = metric
+        }
+        let font = NSFont.monospacedDigitSystemFont(ofSize: NSFont.systemFontSize(for: .small), weight: .medium)
+        let attributed = NSAttributedString(string: title, attributes: [.font: font])
+        let textWidth = ceil(attributed.size().width)
+        if textWidth > maxMetricWidth {
+            maxMetricWidth = min(textWidth, Self.maxMetricWidthCap)
+        }
+
+        let scale = button.window?.backingScaleFactor ?? 2
+        let canvasWidth = Self.statusLength(metricWidth: maxMetricWidth)
+        let image = Self.drawStatusImage(
+            width: canvasWidth,
+            height: Self.barHeight,
+            scale: scale,
+            boltSymbol: "bolt.fill",
+            title: title,
+            font: font,
+            color: color
         )
-        button.contentTintColor = tint
+        image.isTemplate = isTemplate
+        image.accessibilityDescription = "SparkTop"
+        button.image = image
+        button.imagePosition = .imageLeading
+        button.attributedTitle = NSAttributedString()
+        button.contentTintColor = nil
+        statusItem?.length = canvasWidth
 
         let stateText: String
         switch state {
@@ -174,5 +215,78 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         case .authFailed: stateText = "sparkDash auth failed"
         }
         button.toolTip = "SparkTop — \(summary.online)/\(summary.total) online · GPU \(Int(summary.gpuPowerW.rounded())) W\n\(stateText)"
+    }
+
+    /// Renders bolt + metric text into a fixed-size canvas so the item keeps
+    /// a stable width. Drawn at the backing scale for retina crispness.
+    nonisolated static func drawStatusImage(
+        width: CGFloat,
+        height: CGFloat,
+        scale: CGFloat,
+        boltSymbol: String,
+        title: String,
+        font: NSFont,
+        color: NSColor
+    ) -> NSImage {
+        let pixelsW = max(1, Int(width * scale))
+        let pixelsH = max(1, Int(height * scale))
+        guard let rep = NSBitmapImageRep(
+            bitmapDataPlanes: nil,
+            pixelsWide: pixelsW,
+            pixelsHigh: pixelsH,
+            bitsPerSample: 8,
+            samplesPerPixel: 4,
+            hasAlpha: true,
+            isPlanar: false,
+            colorSpaceName: NSColorSpaceName.calibratedRGB,
+            bytesPerRow: 0,
+            bitsPerPixel: 0
+        ) else {
+            return NSImage()
+        }
+        rep.size = NSSize(width: width, height: height)
+
+        NSGraphicsContext.saveGraphicsState()
+        defer { NSGraphicsContext.restoreGraphicsState() }
+        guard let ctx = NSGraphicsContext(bitmapImageRep: rep) else { return NSImage() }
+        NSGraphicsContext.current = ctx
+
+        let x: CGFloat = sidePadding
+
+        // Bolt, vertically centered, scaled to the square box.
+        if var bolt = NSImage(systemSymbolName: boltSymbol, accessibilityDescription: nil) {
+            let box = boltWidth
+            let config = NSImage.SymbolConfiguration(pointSize: box, weight: .medium)
+            bolt = bolt.withSymbolConfiguration(config) ?? bolt
+            let src = bolt.size
+            let fit = min(box / src.width, (box * 1.25) / src.height)
+            let drawW = src.width * fit
+            let drawH = src.height * fit
+            let dy = (height - drawH) / 2
+            let rect = NSRect(x: x, y: dy, width: drawW, height: drawH)
+            // Render the symbol, then tint it by painting the alpha mask.
+            let tinted = NSImage(size: bolt.size)
+            tinted.lockFocusFlipped(false)
+            bolt.draw(in: NSRect(origin: .zero, size: bolt.size))
+            color.set()
+            NSRect(origin: .zero, size: bolt.size).fill(using: .sourceAtop)
+            tinted.unlockFocus()
+            tinted.draw(in: rect)
+        }
+
+        // Metric text, right-aligned in the sticky canvas: the unit suffix
+        // (" t/s") stays put while digits grow leftward into reserved space.
+        if !title.isEmpty {
+            let attrs: [NSAttributedString.Key: Any] = [.font: font, .foregroundColor: color]
+            let attr = NSAttributedString(string: title, attributes: attrs)
+            let size = attr.size()
+            let tx = width - sidePadding - ceil(size.width)
+            let ty = (height - size.height) / 2
+            attr.draw(at: NSPoint(x: tx, y: ty))
+        }
+
+        let image = NSImage()
+        image.addRepresentation(rep)
+        return image
     }
 }

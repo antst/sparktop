@@ -2,6 +2,16 @@
 
 A native macOS **menu bar app** that shows your [sparkDash](https://github.com/MiaAI-Lab/sparkDash) fleet at a glance: a live `⚡` item in the menu bar and a rich fleet overview in the popover.
 
+<p align="center">
+  <img src="docs/screenshot-overview.png" width="380" alt="SparkTop popover — live fleet overview">
+</p>
+<p align="center">
+  <em>Menu bar icon — live decode rate while a model is serving, and idle. The item keeps a sticky width (grows for wider values, never shrinks back), and the value is right-aligned so the unit never moves.</em><br><br>
+  <img src="docs/screenshot-menubar.png" height="37" alt="Menu bar: live decode rate">
+  &nbsp;&nbsp;
+  <img src="docs/screenshot-menubar-idle.png" height="37" alt="Menu bar: idle, 0 t/s">
+</p>
+
 SparkTop is a **thin client** — sparkDash stays the single source of truth. It connects to your sparkDash server over WebSocket (`/ws`), renders the live snapshot natively in SwiftUI, and polls a couple of REST endpoints (`/api/llm-token-totals/history`, `/api/events`) for fleet-level stats. No SSH credentials ever leave the sparkDash server.
 
 ## Features
@@ -33,6 +43,10 @@ Requires Xcode/Swift toolchain (macOS 13+ target).
 ## Configure
 
 First launch: click the bolt → gear → set the sparkDash URL (e.g. `http://hai:5555`) and paste the access token (`SPARKDASH_TOKEN` of your server). *Test* verifies reachability and auth mode; *Save & Reconnect* applies.
+
+<p align="center">
+  <img src="docs/screenshot-settings.png" width="280" alt="SparkTop settings">
+</p>
 
 The token is stored in the login Keychain (with a fast startup cache in `defaults` domain `com.sparktop.menubar`). To pre-seed it:
 

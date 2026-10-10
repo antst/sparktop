@@ -49,6 +49,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
             // Debug/demo helper: `--open` opens the popover on launch.
             if CommandLine.arguments.contains("--open") {
+                if CommandLine.arguments.contains("--settings") {
+                    self.ui.showSettings = true
+                }
                 try? await Task.sleep(nanoseconds: 300_000_000)
                 controller.show()
                 FileHandle.standardError.write(Data("[sparktop] popover shown: \(self.popover.isShown)\n".utf8))
