@@ -1,3 +1,4 @@
+import AppKit
 import Foundation
 
 /// Small Keychain wrapper for the sparkDash access token.
@@ -136,6 +137,7 @@ final class Settings: ObservableObject {
         token = UserDefaults.standard.string(forKey: Self.tokenCacheKey) ?? ""
         iconMetric = MenuBarMetric(rawValue: UserDefaults.standard.string(forKey: Self.iconMetricKey) ?? "") ?? .power
         keepPopoverFront = UserDefaults.standard.bool(forKey: Self.keepPopoverFrontKey)
+        Self.log("settings loaded: server=\(serverURL) metric=\(iconMetric.rawValue) keepPopoverFront=\(keepPopoverFront)")
         // If a Keychain item exists (created by this app) and the user has
         // not typed a different token in the meantime, prefer it.
         let cached = token
@@ -145,6 +147,17 @@ final class Settings: ObservableObject {
                 self.token = value
             }
         }
+    }
+
+    /// Popover behavior — THE single source of truth, derived from the
+    /// setting every time it is consulted. `--pin` forces pinned (debug).
+    var popoverBehavior: NSPopover.Behavior {
+        if CommandLine.arguments.contains("--pin") { return .applicationDefined }
+        return keepPopoverFront ? .applicationDefined : .transient
+    }
+
+    static func log(_ message: String) {
+        FileHandle.standardError.write(Data("[sparktop] \(message)\n".utf8))
     }
 
     /// Normalized base URL (scheme added, trailing slash dropped).

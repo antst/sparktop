@@ -114,6 +114,9 @@ final class StatusItemController: NSObject, NSMenuDelegate {
 
     func show() {
         guard let button = statusItem?.button else { return }
+        // Derive behavior from the setting at every open — the setting and
+        // the popover can never drift apart, even across upgrades.
+        popover.behavior = settings.popoverBehavior
         popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
     }
 

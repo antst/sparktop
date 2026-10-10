@@ -13,10 +13,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         applyPopoverBehavior()
         popover.animates = true
-        // Debug: `--pin` forces the pinned behavior regardless of settings.
-        if CommandLine.arguments.contains("--pin") {
-            popover.behavior = .applicationDefined
-        }
 
         Task { @MainActor in
             let root = RootView(store: self.store, settings: self.settings, ui: self.ui)
@@ -58,9 +54,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             }
         }
     }
-    /// Popover pinned in front vs auto-hide on losing focus.
+    /// Popover pinned in front vs auto-hide on losing focus. Derived from the
+    /// setting (also re-derived at every popover show, so a missed launch-time
+    /// apply can never desync the two).
     private func applyPopoverBehavior() {
-        popover.behavior = settings.keepPopoverFront ? .applicationDefined : .transient
+        popover.behavior = settings.popoverBehavior
+        FileHandle.standardError.write(Data("[sparktop] popover behavior → \(popover.behavior == .applicationDefined ? "pinned" : "transient")\n".utf8))
     }
 }
 
