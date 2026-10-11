@@ -98,10 +98,13 @@ final class StatusItemController: NSObject, NSMenuDelegate, NSPopoverDelegate {
 
     // MARK: Right-click menu
 
+    /// Pops the context menu up directly below the bolt. Never routed
+    /// through button.menu + performClick: that re-dispatches the button
+    /// action while the right-click is still the current event, recursing
+    /// into showContextMenu until the stack blows up (seen as a crash).
     private func showContextMenu() {
         guard let button = statusItem?.button else { return }
         let menu = NSMenu()
-        menu.delegate = self
         menu.autoenablesItems = false
 
         let dash = NSMenuItem(title: "Open sparkDash", action: #selector(openDashboardAction), keyEquivalent: "")
@@ -114,15 +117,11 @@ final class StatusItemController: NSObject, NSMenuDelegate, NSPopoverDelegate {
         menu.addItem(settingsItem)
         menu.addItem(.separator())
         let quit = NSMenuItem(title: "Quit SparkTop", action: #selector(quitAction), keyEquivalent: "q")
+        quit.keyEquivalentModifierMask = []
         quit.target = self
         menu.addItem(quit)
 
-        button.menu = menu
-        button.performClick(nil)
-    }
-
-    func menuDidClose(_ menu: NSMenu) {
-        statusItem?.button?.menu = nil
+        menu.popUp(positioning: nil, at: NSPoint(x: 0, y: button.bounds.maxY + 4), in: button)
     }
 
     @objc private func openDashboardAction() { openDashboard?() }
