@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 import ServiceManagement
 
@@ -130,6 +131,18 @@ struct SettingsView: View {
                     .font(.system(size: 11))
             }
             .toggleStyle(.checkbox)
+
+            Divider()
+
+            Button {
+                NSApp.terminate(nil)
+            } label: {
+                Label("Quit SparkTop", systemImage: "power")
+                    .font(.system(size: 11))
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(Color(nsColor: .systemRed))
+            .help("Quit the app (also available via right-click on the bolt)")
 
             Spacer()
         }
