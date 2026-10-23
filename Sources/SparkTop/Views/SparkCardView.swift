@@ -1,4 +1,5 @@
 import SwiftUI
+import SparkTopCore
 
 /// Compact per-unit card, in the spirit of sparkDash's Overview cards.
 struct SparkCardView: View {

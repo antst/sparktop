@@ -40,6 +40,25 @@ SparkTop is a **thin client** — sparkDash stays the single source of truth. It
 
 Requires Xcode/Swift toolchain (macOS 13+ target).
 
+## iOS & iPadOS
+
+A native SwiftUI app built on the same data layer (`Sources/Core`): fleet overview, per-unit detail (GPU, unified memory, CPU, network, storage, LLM endpoints, health findings), and settings — over the sparkDash WebSocket like the menubar app.
+
+```bash
+brew install xcodegen
+cd ios && xcodegen generate --spec project.yml && cd ..
+open ios/SparkTopIOS.xcodeproj     # pick your team, run on device/simulator
+```
+
+**Installing without the App Store** (personal use):
+
+1. Grab `SparkTop-unsigned-<version>.ipa` from a release (CI builds it on every tag), or build as above.
+2. Sideload with [AltStore](https://altstore.io)/[SideStore](https://sidestore.io) (free Apple ID, 7-day re-sign) or [Sideloadly]; with a paid developer account the signature lasts a year.
+3. Alternatively open `ios/SparkTopIOS.xcodeproj` in Xcode and press Run — free accounts work for your own devices.
+4. On first launch iOS asks for **Local Network** permission — required to reach `http://<your-sparkdash>:5555`.
+
+> The sparkDash web PWA (installed from the browser over HTTPS) remains the zero-install mobile option; the native app adds the fleet overview, per-unit detail and Face-ID-protected token storage.
+
 ## Configure
 
 First launch: click the bolt → gear → set the sparkDash URL (e.g. `http://hai:5555`) and paste the access token (`SPARKDASH_TOKEN` of your server). *Test* verifies reachability and auth mode; *Save & Reconnect* applies.
@@ -57,17 +76,24 @@ defaults write com.sparktop.menubar sparkdash-token-cache '<token>'
 ## Layout
 
 ```
-Sources/SparkTop/
-├── main.swift            # AppKit entry: NSApplication + NSPopover wiring
-├── Models.swift          # sparkDash snapshot/event decoding (tolerant, optional fields)
-├── Settings.swift        # URL/token/metric persistence + Keychain wrapper
-├── SnapshotStore.swift   # WebSocket client (reconnect/watchdog) + REST polls
-├── StatusItem.swift      # NSStatusItem: metric text, tints, right-click menu
-└── Views/
-    ├── OverviewView.swift   # fleet strip, cards, activity, footer
-    ├── SparkCardView.swift  # per-unit card
-    ├── SettingsView.swift   # settings pane
-    └── Components.swift     # bars, chips, formatters
+Sources/
+├── Core/                     # platform-neutral data layer (macOS + iOS)
+│   ├── Models.swift          # sparkDash snapshot/event decoding (tolerant, optional fields)
+│   ├── ServerConfig.swift    # URL/token persistence, Keychain wrapper, ATS-safe requests
+│   ├── SnapshotStore.swift   # WebSocket client (reconnect/watchdog) + REST polls
+│   └── Fmt.swift             # shared value formatters
+└── SparkTop/                 # macOS menubar app (AppKit + SwiftUI)
+    ├── main.swift            # NSApplication + NSPopover wiring
+    ├── Settings.swift        # menu-bar metric, popover pinning
+    ├── StatusItem.swift      # NSStatusItem: metric canvas, tints, right-click menu
+    └── Views/
+        ├── OverviewView.swift   # fleet strip, cards, activity, footer
+        ├── SparkCardView.swift  # per-unit card
+        ├── SettingsView.swift   # settings pane
+        └── Components.swift     # bars, chips, colors
+ios/
+├── project.yml               # XcodeGen spec (compiles Sources/Core + ios/SparkTopIOS)
+└── SparkTopIOS/              # SwiftUI iOS/iPadOS app (list + detail + settings)
 ```
 
 ## Notes

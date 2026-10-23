@@ -1,0 +1,33 @@
+name: SparkTopIOS
+options:
+  bundleIdPrefix: com.sparktop
+  createIntermediateGroups: true
+  groupSortPosition: top
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MARKETING_VERSION: 0.10.0
+    CURRENT_PROJECT_VERSION: 1
+    CODE_SIGN_STYLE: Automatic
+    CODE_SIGN_IDENTITY: "Apple Development"
+targets:
+  SparkTopIOS:
+    type: application
+    platform: iOS
+    deploymentTarget: "16.0"
+    sources:
+      - path: ../Sources/Core
+      - path: SparkTopIOS
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.sparktop.ios
+        PRODUCT_NAME: SparkTop
+        INFOPLIST_FILE: SparkTopIOS/Info.plist
+        TARGETED_DEVICE_FAMILY: "1,2"
+schemes:
+  SparkTopIOS:
+    build:
+      targets:
+        SparkTopIOS: all
+    run:
+      config: Debug

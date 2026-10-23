@@ -38,14 +38,33 @@ jobs:
           ditto -c -k --keepParent SparkTop.app SparkTop-universal.zip
           shasum -a 256 SparkTop-universal.zip > SparkTop-universal.zip.sha256
 
+      - name: Build iOS app (unsigned ipa)
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          brew install xcodegen
+          cd ios && xcodegen generate --spec project.yml && cd ..
+          VERSION="${GITHUB_REF_NAME#v}"
+          xcodebuild -project ios/SparkTopIOS.xcodeproj -scheme SparkTopIOS \
+            -destination 'generic/platform=iOS' -configuration Release \
+            -derivedDataPath build/ios build CODE_SIGNING_ALLOWED=NO CODE_SIGN_IDENTITY="" \
+            MARKETING_VERSION="$VERSION" CURRENT_PROJECT_VERSION="$VERSION"
+          mkdir -p dist/ipa/Payload
+          cp -R build/ios/Build/Products/Release-iphoneos/SparkTop.app dist/ipa/Payload/
+          cd dist/ipa
+          zip -qry "SparkTop-unsigned-$VERSION.ipa" Payload
+          shasum -a 256 "SparkTop-unsigned-$VERSION.ipa" > "SparkTop-unsigned-$VERSION.ipa.sha256"
+
       - name: Publish release
         if: startsWith(github.ref, 'refs/tags/v')
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          VERSION="${GITHUB_REF_NAME#v}"
           gh release create "$GITHUB_REF_NAME" \
             dist/SparkTop-universal.zip \
             dist/SparkTop-universal.zip.sha256 \
+            "dist/ipa/SparkTop-unsigned-$VERSION.ipa" \
+            "dist/ipa/SparkTop-unsigned-$VERSION.ipa.sha256" \
             --title "SparkTop $GITHUB_REF_NAME" \
             --notes-file .github/release-notes.md \
             --generate-notes

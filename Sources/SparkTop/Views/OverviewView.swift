@@ -1,4 +1,5 @@
 import SwiftUI
+import SparkTopCore
 
 /// Shared UI state (which "page" the popover shows).
 final class AppUI: ObservableObject {

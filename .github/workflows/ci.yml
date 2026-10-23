@@ -9,7 +9,7 @@ on:
 
 jobs:
   build:
-    name: Build (arm64)
+    name: Build macOS (arm64)
     runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
@@ -26,3 +26,24 @@ jobs:
           test -f dist/SparkTop.app/Contents/Info.plist
           codesign --verify dist/SparkTop.app
           echo "bundle OK"
+
+  ios:
+    name: Build iOS (unsigned)
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install xcodegen
+        run: brew install xcodegen
+
+      - name: Generate project
+        run: cd ios && xcodegen generate --spec project.yml
+
+      - name: Build (unsigned, device)
+        run: |
+          xcodebuild -project ios/SparkTopIOS.xcodeproj -scheme SparkTopIOS \
+            -destination 'generic/platform=iOS' -configuration Release \
+            -derivedDataPath build/ios build CODE_SIGNING_ALLOWED=NO CODE_SIGN_IDENTITY=""
+
+      - name: Verify bundle
+        run: test -d build/ios/Build/Products/Release-iphoneos/SparkTop.app

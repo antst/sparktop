@@ -5,8 +5,8 @@ import Combine
 /// snapshot. Reconnects with capped exponential backoff; distinguishes "server
 /// down" from "token rejected" by probing GET /api/health over REST.
 @MainActor
-final class SnapshotStore: ObservableObject {
-    enum ConnState: Equatable {
+public final class SnapshotStore: ObservableObject {
+    public enum ConnState: Equatable {
         case idle
         case connecting
         case connected
@@ -14,19 +14,19 @@ final class SnapshotStore: ObservableObject {
         case authFailed(String)
     }
 
-    @Published private(set) var sparks: [SparkSnapshot] = []
-    @Published private(set) var state: ConnState = .idle
-    @Published private(set) var lastSnapshotAt: Date?
-    @Published private(set) var refreshIntervalMs: Double = 2000
-    @Published private(set) var tokensToday: TokensToday?
-    @Published private(set) var recentEvents: [FleetEvent] = []
+    @Published public var sparks: [SparkSnapshot] = []
+    @Published public var state: ConnState = .idle
+    @Published public private(set) var lastSnapshotAt: Date?
+    @Published public private(set) var refreshIntervalMs: Double = 2000
+    @Published public var tokensToday: TokensToday?
+    @Published public var recentEvents: [FleetEvent] = []
 
-    struct TokensToday: Equatable {
-        var completion: Int
-        var prompt: Int
+    public struct TokensToday: Equatable {
+        public var completion: Int
+        public var prompt: Int
     }
 
-    private nonisolated(unsafe) let settings: Settings
+    private nonisolated(unsafe) let settings: ServerConfig
     private nonisolated(unsafe) let session: URLSession
     private var task: URLSessionWebSocketTask?
     private var backoff: TimeInterval = 1
@@ -41,14 +41,14 @@ final class SnapshotStore: ObservableObject {
 
     /// Nonisolated so the app delegate (created before the main-actor hop) can
     /// construct the store; all mutation happens on the main actor.
-    nonisolated init(settings: Settings, session: URLSession = URLSession(configuration: .default)) {
+    public nonisolated init(settings: ServerConfig, session: URLSession = URLSession(configuration: .default)) {
         self.settings = settings
         self.session = session
     }
 
     // MARK: Lifecycle
 
-    func start() {
+    public func start() {
         stopTimers()
         backoff = 1
         // Weak self is bound in the innermost closure: the Timer callback is
@@ -66,13 +66,13 @@ final class SnapshotStore: ObservableObject {
         connect()
     }
 
-    func reconnect() {
+    public func reconnect() {
         teardownSocket()
         backoff = 1
         start()
     }
 
-    func stop() {
+    public func stop() {
         teardownSocket()
         stopTimers()
         state = .idle
@@ -233,21 +233,21 @@ final class SnapshotStore: ObservableObject {
 
     // MARK: Derived values for the menu bar
 
-    struct FleetSummary {
-        var total: Int = 0
-        var online: Int = 0
-        var gpuPowerW: Double = 0
-        var hasOffline: Bool = false
-        var hasCritical: Bool = false
-        var hasWarning: Bool = false
+    public struct FleetSummary {
+        public var total: Int = 0
+        public var online: Int = 0
+        public var gpuPowerW: Double = 0
+        public var hasOffline: Bool = false
+        public var hasCritical: Bool = false
+        public var hasWarning: Bool = false
     }
 
-    var fleetSummary: FleetSummary {
+    public var fleetSummary: FleetSummary {
         Self.summarize(sparks)
     }
 
     /// Pure computation so nonisolated callers (menu bar) can use it too.
-    nonisolated static func summarize(_ sparks: [SparkSnapshot]) -> FleetSummary {
+    public nonisolated static func summarize(_ sparks: [SparkSnapshot]) -> FleetSummary {
         var s = FleetSummary()
         s.total = sparks.count
         for spark in sparks {

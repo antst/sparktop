@@ -1,0 +1,12 @@
+{
+  "/Users/antst/work/ai/sparktop/ios/SparkTopIOS/FleetViews.swift" : {
+    "abi-baseline-json" : "/Users/antst/work/ai/sparktop/build/ios/Build/Intermediates.noindex/SparkTopIOS.build/Release-iphoneos/SparkTopIOS.build/Objects-normal/arm64/SparkTop.abi.json",
+    "const-values" : "/Users/antst/work/ai/sparktop/build/ios/Build/Intermediates.noindex/SparkTopIOS.build/Release-iphoneos/SparkTopIOS.build/Objects-normal/arm64/SparkTopIOS-primary.swiftconstvalues",
+    "dependencies" : "/Users/antst/work/ai/sparktop/build/ios/Build/Intermediates.noindex/SparkTopIOS.build/Release-iphoneos/SparkTopIOS.build/Objects-normal/arm64/SparkTopIOS-primary.d",
+    "diagnostics" : "/Users/antst/work/ai/sparktop/build/ios/Build/Intermediates.noindex/SparkTopIOS.build/Release-iphoneos/SparkTopIOS.build/Objects-normal/arm64/SparkTopIOS-primary.dia",
+    "objc-header" : "/Users/antst/work/ai/sparktop/build/ios/Build/Intermediates.noindex/SparkTopIOS.build/Release-iphoneos/SparkTopIOS.build/Objects-normal/arm64/SparkTop-Swift.h",
+    "swiftdoc" : "/Users/antst/work/ai/sparktop/build/ios/Build/Intermediates.noindex/SparkTopIOS.build/Release-iphoneos/SparkTopIOS.build/Objects-normal/arm64/SparkTop.swiftdoc",
+    "swiftmodule" : "/Users/antst/work/ai/sparktop/build/ios/Build/Intermediates.noindex/SparkTopIOS.build/Release-iphoneos/SparkTopIOS.build/Objects-normal/arm64/SparkTop.swiftmodule",
+    "swiftsourceinfo" : "/Users/antst/work/ai/sparktop/build/ios/Build/Intermediates.noindex/SparkTopIOS.build/Release-iphoneos/SparkTopIOS.build/Objects-normal/arm64/SparkTop.swiftsourceinfo"
+  }
+}

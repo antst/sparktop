@@ -1,4 +1,5 @@
 import AppKit
+import SparkTopCore
 import SwiftUI
 import ServiceManagement
 

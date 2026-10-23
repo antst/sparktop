@@ -1,0 +1,56 @@
+{
+  "" : {
+    "const-values" : "/Users/antst/work/ai/sparktop/build/ios/Build/Intermediates.noindex/SparkTopIOS.build/Release-iphoneos/SparkTopIOS.build/Objects-normal/arm64/SparkTopIOS-primary.swiftconstvalues",
+    "dependencies" : "/Users/antst/work/ai/sparktop/build/ios/Build/Intermediates.noindex/SparkTopIOS.build/Release-iphoneos/SparkTopIOS.build/Objects-normal/arm64/SparkTopIOS-primary.d",
+    "diagnostics" : "/Users/antst/work/ai/sparktop/build/ios/Build/Intermediates.noindex/SparkTopIOS.build/Release-iphoneos/SparkTopIOS.build/Objects-normal/arm64/SparkTopIOS-primary.dia",
+    "emit-module-dependencies" : "/Users/antst/work/ai/sparktop/build/ios/Build/Intermediates.noindex/SparkTopIOS.build/Release-iphoneos/SparkTopIOS.build/Objects-normal/arm64/SparkTopIOS-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/antst/work/ai/sparktop/build/ios/Build/Intermediates.noindex/SparkTopIOS.build/Release-iphoneos/SparkTopIOS.build/Objects-normal/arm64/SparkTopIOS-primary-emit-module.dia",
+    "pch" : "/Users/antst/work/ai/sparktop/build/ios/Build/Intermediates.noindex/SparkTopIOS.build/Release-iphoneos/SparkTopIOS.build/Objects-normal/arm64/SparkTopIOS-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/antst/work/ai/sparktop/build/ios/Build/Intermediates.noindex/SparkTopIOS.build/Release-iphoneos/SparkTopIOS.build/Objects-normal/arm64/SparkTopIOS-primary.swiftdeps"
+  },
+  "/Users/antst/work/ai/sparktop/Sources/Core/Fmt.swift" : {
+    "index-unit-output-path" : "/SparkTopIOS.build/Release-iphoneos/SparkTopIOS.build/Objects-normal/arm64/Fmt.o",
+    "llvm-bc" : "/Users/antst/work/ai/sparktop/build/ios/Build/Intermediates.noindex/SparkTopIOS.build/Release-iphoneos/SparkTopIOS.build/Objects-normal/arm64/Fmt.bc",
+    "object" : "/Users/antst/work/ai/sparktop/build/ios/Build/Intermediates.noindex/SparkTopIOS.build/Release-iphoneos/SparkTopIOS.build/Objects-normal/arm64/Fmt.o"
+  },
+  "/Users/antst/work/ai/sparktop/Sources/Core/Models.swift" : {
+    "index-unit-output-path" : "/SparkTopIOS.build/Release-iphoneos/SparkTopIOS.build/Objects-normal/arm64/Models.o",
+    "llvm-bc" : "/Users/antst/work/ai/sparktop/build/ios/Build/Intermediates.noindex/SparkTopIOS.build/Release-iphoneos/SparkTopIOS.build/Objects-normal/arm64/Models.bc",
+    "object" : "/Users/antst/work/ai/sparktop/build/ios/Build/Intermediates.noindex/SparkTopIOS.build/Release-iphoneos/SparkTopIOS.build/Objects-normal/arm64/Models.o"
+  },
+  "/Users/antst/work/ai/sparktop/Sources/Core/ServerConfig.swift" : {
+    "index-unit-output-path" : "/SparkTopIOS.build/Release-iphoneos/SparkTopIOS.build/Objects-normal/arm64/ServerConfig.o",
+    "llvm-bc" : "/Users/antst/work/ai/sparktop/build/ios/Build/Intermediates.noindex/SparkTopIOS.build/Release-iphoneos/SparkTopIOS.build/Objects-normal/arm64/ServerConfig.bc",
+    "object" : "/Users/antst/work/ai/sparktop/build/ios/Build/Intermediates.noindex/SparkTopIOS.build/Release-iphoneos/SparkTopIOS.build/Objects-normal/arm64/ServerConfig.o"
+  },
+  "/Users/antst/work/ai/sparktop/Sources/Core/SnapshotStore.swift" : {
+    "index-unit-output-path" : "/SparkTopIOS.build/Release-iphoneos/SparkTopIOS.build/Objects-normal/arm64/SnapshotStore.o",
+    "llvm-bc" : "/Users/antst/work/ai/sparktop/build/ios/Build/Intermediates.noindex/SparkTopIOS.build/Release-iphoneos/SparkTopIOS.build/Objects-normal/arm64/SnapshotStore.bc",
+    "object" : "/Users/antst/work/ai/sparktop/build/ios/Build/Intermediates.noindex/SparkTopIOS.build/Release-iphoneos/SparkTopIOS.build/Objects-normal/arm64/SnapshotStore.o"
+  },
+  "/Users/antst/work/ai/sparktop/ios/SparkTopIOS/FleetViews.swift" : {
+    "index-unit-output-path" : "/SparkTopIOS.build/Release-iphoneos/SparkTopIOS.build/Objects-normal/arm64/FleetViews.o",
+    "llvm-bc" : "/Users/antst/work/ai/sparktop/build/ios/Build/Intermediates.noindex/SparkTopIOS.build/Release-iphoneos/SparkTopIOS.build/Objects-normal/arm64/FleetViews.bc",
+    "object" : "/Users/antst/work/ai/sparktop/build/ios/Build/Intermediates.noindex/SparkTopIOS.build/Release-iphoneos/SparkTopIOS.build/Objects-normal/arm64/FleetViews.o"
+  },
+  "/Users/antst/work/ai/sparktop/ios/SparkTopIOS/RootView.swift" : {
+    "index-unit-output-path" : "/SparkTopIOS.build/Release-iphoneos/SparkTopIOS.build/Objects-normal/arm64/RootView.o",
+    "llvm-bc" : "/Users/antst/work/ai/sparktop/build/ios/Build/Intermediates.noindex/SparkTopIOS.build/Release-iphoneos/SparkTopIOS.build/Objects-normal/arm64/RootView.bc",
+    "object" : "/Users/antst/work/ai/sparktop/build/ios/Build/Intermediates.noindex/SparkTopIOS.build/Release-iphoneos/SparkTopIOS.build/Objects-normal/arm64/RootView.o"
+  },
+  "/Users/antst/work/ai/sparktop/ios/SparkTopIOS/SettingsScreen.swift" : {
+    "index-unit-output-path" : "/SparkTopIOS.build/Release-iphoneos/SparkTopIOS.build/Objects-normal/arm64/SettingsScreen.o",
+    "llvm-bc" : "/Users/antst/work/ai/sparktop/build/ios/Build/Intermediates.noindex/SparkTopIOS.build/Release-iphoneos/SparkTopIOS.build/Objects-normal/arm64/SettingsScreen.bc",
+    "object" : "/Users/antst/work/ai/sparktop/build/ios/Build/Intermediates.noindex/SparkTopIOS.build/Release-iphoneos/SparkTopIOS.build/Objects-normal/arm64/SettingsScreen.o"
+  },
+  "/Users/antst/work/ai/sparktop/ios/SparkTopIOS/SparkTopApp.swift" : {
+    "index-unit-output-path" : "/SparkTopIOS.build/Release-iphoneos/SparkTopIOS.build/Objects-normal/arm64/SparkTopApp.o",
+    "llvm-bc" : "/Users/antst/work/ai/sparktop/build/ios/Build/Intermediates.noindex/SparkTopIOS.build/Release-iphoneos/SparkTopIOS.build/Objects-normal/arm64/SparkTopApp.bc",
+    "object" : "/Users/antst/work/ai/sparktop/build/ios/Build/Intermediates.noindex/SparkTopIOS.build/Release-iphoneos/SparkTopIOS.build/Objects-normal/arm64/SparkTopApp.o"
+  },
+  "/Users/antst/work/ai/sparktop/ios/SparkTopIOS/UnitDetailView.swift" : {
+    "index-unit-output-path" : "/SparkTopIOS.build/Release-iphoneos/SparkTopIOS.build/Objects-normal/arm64/UnitDetailView.o",
+    "llvm-bc" : "/Users/antst/work/ai/sparktop/build/ios/Build/Intermediates.noindex/SparkTopIOS.build/Release-iphoneos/SparkTopIOS.build/Objects-normal/arm64/UnitDetailView.bc",
+    "object" : "/Users/antst/work/ai/sparktop/build/ios/Build/Intermediates.noindex/SparkTopIOS.build/Release-iphoneos/SparkTopIOS.build/Objects-normal/arm64/UnitDetailView.o"
+  }
+}

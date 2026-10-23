@@ -1,4 +1,5 @@
 import AppKit
+import SparkTopCore
 import Combine
 import Foundation
 
